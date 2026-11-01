@@ -1,4 +1,4 @@
-function printAdcDynamicSimulationResult( p, adc )
+function printAdcDynamicSimulationResult( p, samples, adc )
   % Print the simulation parameters and measured ADC dynamic performance.
 
   %% Print simulation parameters
@@ -7,8 +7,7 @@ function printAdcDynamicSimulationResult( p, adc )
   fprintf( 'Reference voltage: %.4f V\n', p.vRef );
   fprintf( 'Sample rate: %.6g Hz\n', p.sampleRate );
   fprintf( 'FFT length: %d samples\n', p.fftLen );
-  fprintf( 'Input frequency: %.6f Hz\n', p.nCycle * p.sampleRate / p.fftLen );
-  fprintf( 'Input amplitude: %.2f dBFS\n', p.inputAmplitudeDbfs );
+  fprintf( 'Input frequency: %.6f Hz\n', samples.toneBin * p.sampleRate / p.fftLen );
 
   %% Print dynamic performance metrics
   fprintf( 'SNDR: %.4f dB\n', adc.sndr );

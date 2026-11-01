@@ -1,17 +1,16 @@
-function digitalCode = cbwSarADC( sample, p, dac )
-% a CBW SAR ADC function (now is an ideal single-ended implementation)
+function digitalCode = cbwSarADC( sample, p, cdac )
+  % a CBW SAR ADC function (now is an ideal single-ended implementation)
 
-code = 0;
-for iBit = p.adcResolution - 1 : -1 : 0
-    code = code + 2 ^ iBit;
-    vDacOut = dac( code, p.vRef );
+  cdac.switchArray = zeros( 1, p.adcResolution );
+  for iBit = 1 : p.adcResolution
+    cdac.switchArray( iBit ) = 1;
+    vDacOut = p.vRef * sum( cdac.capArray( 1 : end - 1 ) .* cdac.switchArray ) / sum( cdac.capArray );
     decision = idealComparator( sample, vDacOut );
-    if decision == 1
-        % keep the bit set
-    else
-        % clear the bit
-        code = code - 2 ^ iBit;
+    if ~decision
+      cdac.switchArray( iBit ) = 0;
     end
-end
-digitalCode = code;
+  end
+  digitalCode = sum( cdac.switchArray .* 2 .^ ( p.adcResolution - 1 : -1 : 0 ) );
+
+  % TODO: add other SAR ADC topologies.
 end

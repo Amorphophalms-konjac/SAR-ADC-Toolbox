@@ -4,14 +4,8 @@ close all
 clc
 format long g
 
-%% load project paths relative to this script
-projectFolder = fileparts( fileparts( mfilename( 'fullpath' ) ) );
-addpath( fullfile( projectFolder, 'sim-config' ), '-begin' );
-addpath( fullfile( projectFolder, 'models' ), '-begin' );
-addpath( genpath( fullfile( projectFolder, 'function' ) ), '-begin' );
-
 %% load simulation configuration and parameters
-p = configDynamicTest;
+p = configIdealSingleEndedCbwSarAdcDynamicTest;
 
 %% allocate storage for simulation data
 
@@ -21,25 +15,24 @@ conversionResult = nan( p.fftLen, 1 );
 samples = genSamples( p );
 
 %% generate dac
-dac = synthesizeCDAC( p );
+cdac = synthesizeCDAC( p );
 
 %% run simulation
 for iSample = 1 : p.fftLen
   sample = samples.data( iSample );
-  conversionResult( iSample ) = cbwSarADC(sample, p, dac);
+  conversionResult( iSample ) = cbwSarADC(sample, p, cdac);
 end
 
 %% process simulation data
 
-% adcDynamicPerformanceMetrics = processAdcData(p, samples, conversionResult);
-adcDynamicPerformanceMetrics = processAdcData( p, conversionResult );
+adcDynamicPerformanceMetrics = processAdcData( p, samples, conversionResult );
 
 %% print simulation parameters and dynamic performance
-printAdcDynamicSimulationResult( p, adcDynamicPerformanceMetrics );
+printAdcDynamicSimulationResult( p, samples, adcDynamicPerformanceMetrics );
 
 %% plot simulation results
 
-figure = plotAdcDynamicSimulationResult( p, adcDynamicPerformanceMetrics );
+figure = plotAdcDynamicSimulationResult( p, samples, adcDynamicPerformanceMetrics );
 
 %% export plots
 
