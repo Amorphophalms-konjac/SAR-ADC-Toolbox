@@ -18,14 +18,15 @@ samples = genSamples( p );
 cdac = synthesizeCDAC( p );
 
 %% run simulation
+rawCode = nan( p.fftLen, 1 );
 for iSample = 1 : p.fftLen
   sample = samples.data( iSample );
-  conversionResult( iSample ) = cbwSarADC(sample, p, cdac);
+  convRes = cbwSarADC(sample, p, cdac);
+  rawCode( iSample ) = bi2de( convRes, 'left-msb' );
 end
 
 %% process simulation data
-
-adcDynamicPerformanceMetrics = processAdcData( p, samples, conversionResult );
+adcDynamicPerformanceMetrics = processAdcData( p, samples, rawCode );
 
 %% print simulation parameters and dynamic performance
 printAdcDynamicSimulationResult( p, samples, adcDynamicPerformanceMetrics );
@@ -36,6 +37,7 @@ figure = plotAdcDynamicSimulationResult( p, samples, adcDynamicPerformanceMetric
 
 %% export plots
 
-filename = fullfile( fileparts( mfilename( 'fullpath' ) ), 'adc-dynamic-result.png' );
+projectFolder = fileparts( fileparts( mfilename( 'fullpath' ) ) );
+filename = fullfile( projectFolder, 'drawing', 'adc-dynamic-result.png' );
 exportgraphics( figure, filename );
 fprintf( 'Plot saved to: %s\n', filename );

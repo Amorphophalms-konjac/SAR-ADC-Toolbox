@@ -1,15 +1,14 @@
 function figureHandle = plotAdcDynamicSimulationResult( p, samples, adc )
 
   %% Convert bin power to dBFS
-  binPower = adc.psd.powerDensity( : ) * p.sampleRate / p.fftLen;
   fullScalePower = p.vRef ^ 2 / 8;
-  spectrumDbfs = 10 * log10( max( binPower / fullScalePower, realmin ) );
+  spectrumDbfs = 10 * log10( max( adc.spectrum.binPower / fullScalePower, realmin ) );
   inputFrequency = samples.toneBin * p.sampleRate / p.fftLen;
 
   %% Plot the single-sided spectrum
   figureHandle = figure( 'Color', 'w', 'Name', 'ADC Dynamic Simulation', 'NumberTitle', 'off' );
   axesHandle = axes( 'Parent', figureHandle );
-  plot( axesHandle, adc.psd.frequency( : ), spectrumDbfs, 'b', 'LineWidth', 2.5 );
+  plot( axesHandle, adc.spectrum.frequency, spectrumDbfs, 'b', 'LineWidth', 2.5 );
   set( axesHandle, 'Color', 'w', 'XColor', 'k', 'YColor', 'k' );
   grid( axesHandle, 'on' );
   xlabel( axesHandle, 'Frequency (kHz)', 'Color', 'k' );
@@ -23,9 +22,12 @@ function figureHandle = plotAdcDynamicSimulationResult( p, samples, adc )
   % Keep frequency data in Hz and display tick labels in kHz.
   axesHandle.XAxis.Exponent = 0;
   xticklabels( axesHandle, compose( '%g', xticks( axesHandle ) / 1e3 ) );
-  % Exclude zero-power bins when choosing the visible vertical range.
-  positivePowerDb = spectrumDbfs( binPower > 0 );
-  lowerLimit = 10 * floor( min( positivePowerDb ) / 10 ) - 5;
-  upperLimit = 10 * ceil( max( positivePowerDb ) / 10 ) + 5;
+  % Estimate the average per-bin quantization noise floor.
+  idealSNR = 6.02 * p.adcResolution + 1.76;
+  fftProcessGain = 10 * log10( p.fftLen / 2 );
+  noiseFloorDbfs = -idealSNR - fftProcessGain;
+  % Round down to leave room below the theoretical noise floor.
+  lowerLimit = 5 * floor( noiseFloorDbfs / 5 );
+  upperLimit = 5;
   ylim( axesHandle, [ lowerLimit, upperLimit ] );
 end

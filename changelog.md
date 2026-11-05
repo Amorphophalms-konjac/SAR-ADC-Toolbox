@@ -2,6 +2,29 @@
 
 按日期记录项目变更，最新内容在前。
 
+## 2026-11-05
+
+### 新增
+
+- 新增 `function/cdac/binaryCDAC.m`，独立计算采样电荷、参考切换电荷和比较器节点电压；使用电容行向量与开关列向量的矩阵内积计算切换电荷，总电容包含 dummy 电容。
+
+### 修改
+
+- `cbwSarADC` 调用独立的 CDAC 函数，并根据比较器节点相对于共模电压的结果更新试探位；返回 MSB 在前的二进制位向量。
+- testbench 使用 `bi2de( convRes, 'left-msb' )` 将位向量转换为十进制输出码，再交给数据处理函数。
+- `processAdcData` 改用显式 FFT 和点数归一化计算单边每 bin 功率；普通正频率 bin 合并负频率功率，Nyquist bin 不翻倍，DC bin 功率置零，移除时域减均值。
+- 频谱输出字段由 `adc.psd` 改为 `adc.spectrum.binPower` 和 `adc.spectrum.frequency`，同步更新 SNDR 计算和绘图；原 `periodogram` 调用保留为注释。
+- 频谱纵轴根据 ADC 位数和 FFT 点数估算理想量化噪底，向下取整到 5 dB 间隔作为下限，上限为 5 dBFS。
+- 仿真图片导出位置改为项目根目录的 `drawing/adc-dynamic-result.png`，移除 `testbench/` 下的旧结果图，并更新结果图片。
+- 修正 MATLAB 编码规范文档的 Markdown 任务列表格式，规则内容不变。
+
+### 验证
+
+- 使用 MATLAB R2025b 加载项目路径并运行 `testbench/simConventionalSarADC.m`，完成转换、指标计算和图片导出。
+- 本次验证条件为 12 位单端理想 ADC、1 V 参考电压、1 MHz 采样率、1024 点 FFT；随机选取 `toneBin = 417`，输入频率为 407226.5625 Hz。
+- 得到 SNDR = 73.9883 dB、ENOB = 11.9981；DC bin 功率为 0，输出码范围为 0～4095，单边频谱尺寸为 513 × 1，纵轴范围为 −105～5 dBFS。
+- 本轮验证为单频点运行；4～5 个输入频点的独立仿真及汇总尚未实现，`genToneBin` 仍使用原来的随机奇数选择方法。
+
 ## 2026-11-01
 
 当前为 `dev` 分支上的开发变更，尚未提交或合并至 `main`。
